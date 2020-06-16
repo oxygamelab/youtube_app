@@ -13,7 +13,7 @@ class Video {
 
   factory Video.fromMap(Map<String, dynamic> video) {
     return Video(
-      id: video['id'],
+      id: video['snippet']['resourceId']['videoId'],
       title: video['snippet']['title'],
       thumbnailUrl: video['snippet']['thumbnails']['high']['url'],
       channelTitle: video['snippet']['channelTitle'],
