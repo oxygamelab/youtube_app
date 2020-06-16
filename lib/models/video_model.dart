@@ -10,4 +10,13 @@ class Video {
     this.thumbnailUrl,
     this.channelTitle,
   });
+
+  factory Video.fromMap(Map<String, dynamic> video) {
+    return Video(
+      id: video['id'],
+      title: video['snippet']['title'],
+      thumbnailUrl: video['snippet']['thumbnails']['high']['url'],
+      channelTitle: video['snippet']['channelTitle'],
+    );
+  }
 }
