@@ -31,3 +31,14 @@ class Channel {
     );
   }
 }
+
+final List<Map<String, String>> channelIds = [
+  {
+    'id': 'UC6Dy0rQ6zDnQuHQ1EeErGUA',
+    'name': 'MarcusNG',
+  },
+  {
+    'id': 'UCm_-MeTSdYQjUIhS8VUR5NA',
+    'name': 'Menejer',
+  },
+];

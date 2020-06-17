@@ -11,13 +11,16 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   Channel _channel;
+  String _channelId;
   bool _isLoading = false;
-  final String _channelId = 'UC6Dy0rQ6zDnQuHQ1EeErGUA';
+  ScrollController _scrollController = new ScrollController();
+
   //channelId: 'UCm_-MeTSdYQjUIhS8VUR5NA',
 
   @override
   void initState() {
     super.initState();
+    _channelId = channelIds.first['id'];
     _initChannel();
   }
 
@@ -139,41 +142,76 @@ class _HomeScreenState extends State<HomeScreen> {
     _isLoading = false;
   }
 
+  void _select(String channelId) async {
+    _isLoading = true;
+    APIService.instance.emptPageToken();
+    Channel newchannel = await APIService.instance.fetchChannel(
+      channelId: channelId,
+    );
+    setState(() {
+      _channel = newchannel;
+      _scrollController.animateTo(
+        0.0,
+        curve: Curves.easeOut,
+        duration: const Duration(milliseconds: 300),
+      );
+    });
+    _isLoading = false;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: Colors.white,
-        appBar: AppBar(
-          title: Text('Youtube Channel App'),
-        ),
-        body: _channel != null
-            ? NotificationListener<ScrollNotification>(
-                onNotification: (ScrollNotification scrollDetails) {
-                  if (!_isLoading &&
-                      _channel.videos.length !=
-                          int.parse(_channel.videoCount) &&
-                      scrollDetails.metrics.pixels ==
-                          scrollDetails.metrics.maxScrollExtent) {
-                    _loadMoreVideos();
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: Text('Youtube Channel App'),
+        actions: [
+          PopupMenuButton(
+            onSelected: _select,
+            itemBuilder: (BuildContext context) {
+              return channelIds
+                  .map(
+                    (chIds) => PopupMenuItem(
+                      value: chIds['id'],
+                      child: Text(
+                        chIds['name'],
+                      ),
+                    ),
+                  )
+                  .toList();
+            },
+          ),
+        ],
+      ),
+      body: _channel != null
+          ? NotificationListener<ScrollNotification>(
+              onNotification: (ScrollNotification scrollDetails) {
+                if (!_isLoading &&
+                    _channel.videos.length != int.parse(_channel.videoCount) &&
+                    scrollDetails.metrics.pixels ==
+                        scrollDetails.metrics.maxScrollExtent) {
+                  _loadMoreVideos();
+                }
+                return false;
+              },
+              child: ListView.builder(
+                controller: _scrollController,
+                itemCount: 1 + _channel.videos.length,
+                itemBuilder: (BuildContext context, int index) {
+                  if (index == 0) {
+                    return _buildProfileInfo();
                   }
-                  return false;
+                  Video video = _channel.videos[index - 1];
+                  return _buildVideo(video);
                 },
-                child: ListView.builder(
-                  itemCount: 1 + _channel.videos.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    if (index == 0) {
-                      return _buildProfileInfo();
-                    }
-                    Video video = _channel.videos[index - 1];
-                    return _buildVideo(video);
-                  },
-                ),
-              )
-            : Center(
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                      Theme.of(context).primaryColor),
-                ),
-              ));
+              ),
+            )
+          : Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(
+                    Theme.of(context).primaryColor),
+              ),
+            ),
+    );
   }
 }
